@@ -139,7 +139,7 @@ export function convertToCursorRequest(req: AnthropicRequest): CursorChatRequest
 
             if (msg.role === 'assistant') {
                 // 清洗历史中的拒绝痕迹，防止上下文连锁拒绝
-                if (/\[System\s+Filter\]|Cursor(?:'s)?\s+support\s+assistant|I['']\s*m\s+sorry|not\s+able\s+to\s+fulfill|I\s+cannot\s+help\s+with|I\s+only\s+answer\s+questions\s+about\s+Cursor|injected\s+system\s+prompts|I\s+don't\s+have\s+permission|haven't\s+granted/i.test(text)) {
+                if (/\[System\s+Filter\]|Cursor(?:'s)?\s+support\s+assistant|I['']\s*m\s+sorry|not\s+able\s+to\s+fulfill|I\s+cannot\s+help\s+with|I\s+only\s+answer\s+questions\s+about\s+Cursor|injected\s+system\s+prompts|I\s+don't\s+have\s+permission|haven't\s+granted|I'm\s+a\s+coding\s+assistant|focused\s+on\s+software\s+development|beyond\s+(?:my|the)\s+scope|I'?m\s+not\s+(?:able|designed)\s+to|not\s+able\s+to\s+search|I\s+cannot\s+search/i.test(text)) {
                     text = `\`\`\`json action\n{\n  "tool": "${exampleTool.name}",\n  "parameters": ${JSON.stringify(exampleParams, null, 2)}\n}\n\`\`\``;
                 }
             }
