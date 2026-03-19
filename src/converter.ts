@@ -423,19 +423,33 @@ export async function convertToCursorRequest(req: AnthropicRequest): Promise<Cur
 
                 actualQuery = actualQuery.trim();
 
-                // ★ 压缩后空 query 检测：CC 自动压缩后，整条消息可能全是 XML 标签
+                // ★ 压缩后空 query 检测 (#68)：CC 自动压缩后，整条消息可能全是 XML 标签
                 // （如 <system-reminder>压缩的上下文摘要</system-reminder>）
                 // 剥离后 actualQuery 为空，模型完全看不到任务上下文 → 回退：不分离标签
-                if (tagsPrefix && actualQuery.length < 20) {
+                const isCompressedFallback = tagsPrefix && actualQuery.length < 20;
+                if (isCompressedFallback) {
                     actualQuery = tagsPrefix + (actualQuery ? '\n' + actualQuery : '');
                     tagsPrefix = '';
                 }
 
                 // ★ 判断是否是最后一条用户消息（模型即将回答的那条）
                 const isLastUserMsg = !req.messages.slice(i + 1).some(m => m.role === 'user');
-                const thinkingSuffix = (thinkingEnabled && isLastUserMsg)
-                    ? '\n\nFirst, think step by step inside <thinking>...</thinking> tags. Then respond with the appropriate action using the structured format.'
-                    : '\n\nRespond with the appropriate action using the structured format.';
+
+                // ★ 压缩上下文后的首条消息特殊处理 (#68)
+                // 如果消息主体是压缩的 XML 上下文（actualQuery=空），追加通用 "Respond with format"
+                // 会导致模型回答 "你有什么问题吗？"——因为它看不到具体任务
+                // 修复：压缩回退场景下，引导模型根据上下文继续工作，而非等待新指令
+                let thinkingSuffix: string;
+                if (isCompressedFallback && isLastUserMsg) {
+                    thinkingSuffix = thinkingEnabled
+                        ? '\n\nBased on the context above, think step by step inside <thinking>...</thinking> tags about what needs to be done next, then proceed with the appropriate action using the structured format.'
+                        : '\n\nBased on the context above, determine the most appropriate next step and proceed with the appropriate action using the structured format. Do NOT ask the user what they want — the context contains all the information you need.';
+                } else if (thinkingEnabled && isLastUserMsg) {
+                    thinkingSuffix = '\n\nFirst, think step by step inside <thinking>...</thinking> tags. Then respond with the appropriate action using the structured format.';
+                } else {
+                    thinkingSuffix = '\n\nRespond with the appropriate action using the structured format.';
+                }
+
                 let wrapped = `${actualQuery}${thinkingSuffix}`;
 
                 if (tagsPrefix) {
