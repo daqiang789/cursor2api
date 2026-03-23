@@ -18,8 +18,8 @@ timeout: 120
 # 支持多个 token（数组格式），不配置则全部放行
 # 环境变量: AUTH_TOKEN=token1,token2 (逗号分隔)
 auth_tokens:
-  - "sk-ELcJE6A2Th58Uy3yEa9aDd4c700f4e4aB661D779C382356c"
-  - "sk-69MjQS0ccct7a0XL08046cE9CeDc46E2B56767297225E912"
+  - "sk-ELcJE6A2Th58Uy3yEa44349aDd4c700f4e4aB661D779C382356c"
+  - "sk-69MjQS0ccct7a0XL084355046cE9CeDc46E2B56767297225E912"
 
 # ==================== 代理设置 ====================
 # 全局代理（可选）
