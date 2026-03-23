@@ -49,7 +49,7 @@ RUN mkdir -p /app/logs && chown cursor:nodejs /app/logs
 USER cursor
 
 # 声明对外暴露的端口和持久化卷
-EXPOSE 3010
+EXPOSE 1310
 VOLUME ["/app/logs"]
 
 # 启动服务
